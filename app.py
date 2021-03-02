@@ -4,9 +4,10 @@ from flask_restful import Api
 
 # from resources.user import UserRegister
 from resources.quote import Quote, QuoteList
+from resources.tag import Tag
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.sqlite'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['PROPAGATE_EXCEPTIONS'] = True
 # app.secret_key = 'jose'
@@ -15,13 +16,15 @@ api = Api(app)
 
 @app.before_first_request
 def create_tables():
+    from db import db
     db.create_all()
 
 
 # jwt = JWT(app, authenticate, identity)  # /auth
 
-api.add_resource(Quote, '/quote/<string:name>')
+api.add_resource(Quote, '/quote/<string:_id>')
 api.add_resource(QuoteList, '/quotes')
+api.add_resource(Tag, '/tag')
 
 
 if __name__ == '__main__':
