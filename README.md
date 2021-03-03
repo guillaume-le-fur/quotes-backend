@@ -16,3 +16,9 @@
 -[ ] DB schema
 -[ ] API endpoints
 -[ ] 
+
+### V2
+
+-[ ] Users
+-[ ] Check duplicate quotes
+-[ ] Multiple authors

@@ -1,5 +1,7 @@
 from db import db
 from models.quote_to_tag import quote_to_tags
+from models.tag import TagModel
+from typing import List
 
 
 class QuoteModel(db.Model):
@@ -17,17 +19,19 @@ class QuoteModel(db.Model):
         backref=db.backref('quotes', lazy=True)
     )
 
-    def __init__(self, text: str, author: str = None, book: str = None):
+    def __init__(self, text: str, author: str = None, book: str = None, tags: List[str] = []):
         self.text = text
         self.author = author
         self.book = book
+        self.tags = [TagModel(tag) for tag in tags]
 
     def json(self):
         return {
             'id': self.id,
             'text': self.text,
             'author': self.author,
-            'book': self.book
+            'book': self.book,
+            'tags': [tag.json()["name"] for tag in self.tags]
         }
 
     @classmethod

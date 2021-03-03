@@ -1,6 +1,7 @@
 from flask_restful import Resource, reqparse
 # from flask_jwt import jwt_required
-from models.quote import QuoteModel, quote_to_tags
+from models.quote import QuoteModel
+from models.tag import TagModel
 
 
 class Quote(Resource):
@@ -22,6 +23,12 @@ class Quote(Resource):
         type=str,
         required=False,
         help="This field can be left blank!"
+    )
+    parser.add_argument(
+        'tags',
+        type=str,
+        action='append',
+        required=False,
     )
 
     # @jwt_required()
@@ -49,6 +56,7 @@ class Quote(Resource):
             quote.text = data['text']
             quote.author = data["author"]
             quote.book = data["book"]
+            quote.tags = [TagModel(tag) for tag in data["tags"]]  # not the best
         else:
             quote = QuoteModel(**data)
 
@@ -77,6 +85,12 @@ class QuoteList(Resource):
         required=False,
         help="This field can be left blank!"
     )
+    parser.add_argument(
+        'tags',
+        type=str,
+        action='append',
+        required=False,
+    )
 
     def get(self):
         return {'quotes': list(map(lambda x: x.json(), QuoteModel.query.all()))}
@@ -84,7 +98,7 @@ class QuoteList(Resource):
     def post(self):
         data = QuoteList.parser.parse_args()
         quote = QuoteModel(**data)
-
+        print(data)
         try:
             quote.save_to_db()
         except:
