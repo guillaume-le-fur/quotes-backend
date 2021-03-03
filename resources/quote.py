@@ -11,6 +11,18 @@ class Quote(Resource):
         required=True,
         help="This field cannot be left blank!"
     )
+    parser.add_argument(
+        'author',
+        type=str,
+        required=False,
+        help="This field can be left blank!"
+    )
+    parser.add_argument(
+        'book',
+        type=str,
+        required=False,
+        help="This field can be left blank!"
+    )
 
     # @jwt_required()
     def get(self, _id):
@@ -19,21 +31,7 @@ class Quote(Resource):
             return quote.json()
         return {'message': 'quote not found'}, 404
 
-    # Should be deleted in the future
-    def post(self, text):
-        data = Quote.parser.parse_args()
-
-        quote = QuoteModel(text, **data)
-
-        try:
-            quote.save_to_db()
-        except:
-            return {"message": "An error occurred inserting the quote."}, 500
-
-        return quote.json(), 201
-
     def delete(self, _id):
-
         quote = QuoteModel.find_by_id(_id)
         if quote:
             quote.delete_from_db()
@@ -45,10 +43,12 @@ class Quote(Resource):
         data = Quote.parser.parse_args()
 
         quote = QuoteModel.find_by_id(_id)
-        print(data)
-        print(quote)
+        # print(data)
+        # print(quote)
         if quote:
             quote.text = data['text']
+            quote.author = data["author"]
+            quote.book = data["book"]
         else:
             quote = QuoteModel(**data)
 
@@ -92,4 +92,13 @@ class QuoteList(Resource):
 
         return quote.json(), 201
 
+    def delete(self):
+        quotes = QuoteModel.query.all()
+        if quotes:
+            try:
+                [quote.delete_from_db() for quote in quotes]
+            except:
+                return {"message": "An error occurred deleting the quotes."}, 500
 
+            return {'message': 'quotes deleted.'}, 200
+        return {'message': 'no quotes found.'}, 404

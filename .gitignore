@@ -1,4 +1,5 @@
 # Custom
+*.sqlite
 .idea/
 *.db
 
