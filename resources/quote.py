@@ -92,8 +92,11 @@ class QuoteList(Resource):
         required=False,
     )
 
-    def get(self):
-        return {'quotes': list(map(lambda x: x.json(), QuoteModel.query.all()))}
+    def get(self, filter_text: str):
+        print(filter_text)
+        return {
+            'quotes': list(map(lambda x: x.json(), QuoteModel.query.filter(QuoteModel.text.ilike(f'%{filter_text}%')).all()))
+        }
 
     def post(self):
         data = QuoteList.parser.parse_args()
