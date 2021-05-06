@@ -25,7 +25,7 @@ def create_tables():
 # jwt = JWT(app, authenticate, identity)  # /auth
 
 api.add_resource(Quote, '/quote/<string:_id>')
-api.add_resource(QuoteList, '/quotes/<string:filter_text>')
+api.add_resource(QuoteList, '/quotes/<string:filter_text>', '/quotes')
 api.add_resource(Tag, '/tag')
 
 

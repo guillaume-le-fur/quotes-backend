@@ -1,3 +1,4 @@
+import sqlalchemy.exc
 from flask_restful import Resource, reqparse
 # from flask_jwt import jwt_required
 from models.quote import QuoteModel
@@ -50,8 +51,6 @@ class Quote(Resource):
         data = Quote.parser.parse_args()
 
         quote = QuoteModel.find_by_id(_id)
-        # print(data)
-        # print(quote)
         if quote:
             quote.text = data['text']
             quote.author = data["author"]
@@ -92,10 +91,17 @@ class QuoteList(Resource):
         required=False,
     )
 
-    def get(self, filter_text: str):
+    def get(self, filter_text: str = None):
         print(filter_text)
+        if filter_text:
+            result = QuoteModel.query.filter(QuoteModel.text.ilike(f'%{filter_text}%')).all()
+        else:
+            result = QuoteModel.query.all()
         return {
-            'quotes': list(map(lambda x: x.json(), QuoteModel.query.filter(QuoteModel.text.ilike(f'%{filter_text}%')).all()))
+            'quotes': list(map(
+                lambda x: x.json(),
+                result
+            ))
         }
 
     def post(self):
@@ -104,7 +110,8 @@ class QuoteList(Resource):
         print(data)
         try:
             quote.save_to_db()
-        except:
+        # TODO specify error.
+        except sqlalchemy.exc.SQLAlchemyError:
             return {"message": "An error occurred inserting the quote."}, 500
 
         return quote.json(), 201
@@ -114,7 +121,7 @@ class QuoteList(Resource):
         if quotes:
             try:
                 [quote.delete_from_db() for quote in quotes]
-            except:
+            except sqlalchemy.exc.SQLAlchemyError:
                 return {"message": "An error occurred deleting the quotes."}, 500
 
             return {'message': 'quotes deleted.'}, 200
