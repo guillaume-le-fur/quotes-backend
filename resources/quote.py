@@ -46,16 +46,21 @@ class Quote(Resource):
             return {'message': 'quote deleted.'}, 200
         return {'message': 'quote not found.'}, 404
 
-    def put(self, _id):
-
+    def put(self, _id: str = None):
+        _id = int(_id)
+        print("Starting put")
         data = Quote.parser.parse_args()
-
-        quote = QuoteModel.find_by_id(_id)
-        if quote:
-            quote.text = data['text']
-            quote.author = data["author"]
-            quote.book = data["book"]
-            quote.tags = [TagModel(tag) for tag in data["tags"]]  # not the best
+        print(data)
+        if _id is not None and _id > 0:
+            quote = QuoteModel.find_by_id(_id)
+            print(quote)
+            if quote:
+                quote.text = data['text']
+                quote.author = data["author"]
+                quote.book = data["book"]
+                quote.tags = [TagModel(tag) for tag in data["tags"]]  # not the best
+            else:
+                quote = QuoteModel(**data)
         else:
             quote = QuoteModel(**data)
 
