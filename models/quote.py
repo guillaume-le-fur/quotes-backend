@@ -19,11 +19,11 @@ class QuoteModel(db.Model):
         backref=db.backref('quotes', lazy=True)
     )
 
-    def __init__(self, text: str, author: str = None, book: str = None, tags: List[str] = []):
+    def __init__(self, text: str, author: str = None, book: str = None, tags: List[str] = None):
         self.text = text
         self.author = author
         self.book = book
-        self.tags = [TagModel(tag) for tag in tags]
+        self.tags = [TagModel(name=tag) for tag in (tags or [])]
 
     def json(self):
         return {

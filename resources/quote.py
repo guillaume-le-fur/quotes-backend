@@ -58,7 +58,7 @@ class Quote(Resource):
                 quote.text = data['text']
                 quote.author = data["author"]
                 quote.book = data["book"]
-                quote.tags = [TagModel(tag) for tag in data["tags"]]  # not the best
+                quote.tags = [TagModel(tag) for tag in (data["tags"] or [])]  # not the best
             else:
                 quote = QuoteModel(**data)
         else:
