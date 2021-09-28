@@ -3,14 +3,22 @@ from models.quote_to_tag import quote_to_tags
 from models.tag import TagModel
 from typing import List
 
+from utils.string_utils import camel_case_keys
+
 
 class QuoteModel(db.Model):
     __tablename__ = 'Quote'
 
     id = db.Column(db.Integer, primary_key=True)
-    text = db.Column(db.String)
+    creator_id = db.Column(db.Integer, db.ForeignKey('User.id'), nullable=False)
+    text = db.Column(db.String, nullable=False)
     author = db.Column(db.String)
     book = db.Column(db.String)
+
+    creator = db.relationship(
+        "UserModel",
+        back_populates="quotes"
+    )
 
     tags = db.relationship(
         'TagModel',
@@ -19,20 +27,22 @@ class QuoteModel(db.Model):
         backref=db.backref('quotes', lazy=True)
     )
 
-    def __init__(self, text: str, author: str = None, book: str = None, tags: List[str] = None):
+    def __init__(self, creator_id: int, text: str, author: str = None, book: str = None, tags: List[str] = None):
+        self.creator_id = creator_id
         self.text = text
         self.author = author
         self.book = book
         self.tags = [TagModel(name=tag) for tag in (tags or [])]
 
     def json(self):
-        return {
+        return camel_case_keys({
             'id': self.id,
+            'creator_id': self.creator_id,
             'text': self.text,
             'author': self.author,
             'book': self.book,
             'tags': [tag.json()["name"] for tag in self.tags]
-        }
+        })
 
     @classmethod
     def find_by_id(cls, _id: int) -> 'QuoteModel':
