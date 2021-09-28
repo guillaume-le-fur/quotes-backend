@@ -35,8 +35,7 @@ def populate():
             creator_id=1,
             text="Alea iacta est",
             author="Julius Caesar",
-            book="Da vita Caesarum",
-            # tags=['war', 'peace']
+            book="Da vita Caesarum"
         )
 
         quote1.tags = [tag1, tag2]
@@ -45,8 +44,7 @@ def populate():
             creator_id=1,
             text="Dummy 1",
             author="User 1",
-            book="Quotes, vol 1",
-            # tags=['fantasy']
+            book="Quotes, vol 1"
         )
 
         quote2.tags = [tag3]
@@ -56,7 +54,6 @@ def populate():
             text="Dummy 2",
             author="User 2",
             book="Quotes, vol 2",
-            # tags=['dummyTag']
         )
 
         quote3.tags = [tag4]

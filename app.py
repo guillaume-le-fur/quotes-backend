@@ -3,12 +3,9 @@ from datetime import timedelta
 
 from flask import Flask, request, jsonify, make_response
 from flask_restful import Api
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
-from werkzeug.security import generate_password_hash, check_password_hash, safe_str_cmp
+from flask_jwt_extended import create_access_token, JWTManager
+from werkzeug.security import generate_password_hash
 
-from models import quote_to_tag
-from models.quote import QuoteModel
-from models.tag import TagModel
 from models.user import UserModel
 from populate_db import populate
 from resources.quote import Quote, QuoteList
@@ -28,30 +25,12 @@ api = Api(app)
 db.init_app(app)
 
 
+# TODO remove on production DB
 @app.before_first_request
 def create_tables():
     db.drop_all()
     db.create_all()
-
-    # for model in [TagModel, QuoteModel, UserModel, quote_to_tag]:
-    #     print(model)
-    #     db.session.query(model).delete()
-    #     db.session.commit()
     populate()
-
-
-# def authenticate(username, password):
-#     user = UserModel.find_by_username(username=username)
-#     if user and safe_str_cmp(
-#             user.password.encode('utf-8'),
-#             generate_password_hash(password, method='sha256').encode('utf-8')
-#     ):
-#         return user
-#
-#
-# def identity(payload):
-#     user_id = payload['identity']
-#     return UserModel.find_by_id(user_id)
 
 
 jwt = JWTManager(app)

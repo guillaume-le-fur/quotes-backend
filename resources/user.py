@@ -30,12 +30,3 @@ class User(Resource):
         if user:
             return user.json()
         return {'message': 'user not found'}, 404
-
-    # def put(self, username, email, password):
-    #     if UserModel.find_by_username(username):
-    #         return {'message': f'User with username {username} already exists'}, 409
-    #     elif UserModel.find_by_email(email=email):
-    #         return {'message': f'User with email {email} already exists'}, 409
-    #     user = UserModel(username=username, password=password, email=email)
-    #     user.save_to_db()
-    #     return {'message': 'User successfully added.'}, 200
