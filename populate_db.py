@@ -1,3 +1,5 @@
+import datetime
+
 from werkzeug.security import generate_password_hash
 
 from models.tag import TagModel
@@ -35,7 +37,8 @@ def populate():
             creator_id=1,
             text="Alea iacta est",
             author="Julius Caesar",
-            book="Da vita Caesarum"
+            book="Da vita Caesarum",
+            creation_date=datetime.datetime.now()
         )
 
         quote1.tags = [tag1, tag2]
@@ -44,7 +47,8 @@ def populate():
             creator_id=1,
             text="Dummy 1",
             author="User 1",
-            book="Quotes, vol 1"
+            book="Quotes, vol 1",
+            creation_date=datetime.datetime.now()
         )
 
         quote2.tags = [tag3]
@@ -54,8 +58,9 @@ def populate():
             text="Dummy 2",
             author="User 2",
             book="Quotes, vol 2",
+            creation_date=datetime.datetime.now()
         )
 
         quote3.tags = [tag4]
 
-        [quote.save_to_db() for quote in [quote1, quote2,quote3]]
+        [quote.save_to_db() for quote in [quote1, quote2, quote3]]

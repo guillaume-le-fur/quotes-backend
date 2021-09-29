@@ -5,7 +5,7 @@ from flask import Flask, request, jsonify, make_response
 from flask_restful import Api
 from flask_jwt_extended import create_access_token, JWTManager
 from werkzeug.security import generate_password_hash
-
+from flask_jwt_extended.exceptions import JWTExtendedException
 from models.user import UserModel
 from populate_db import populate
 from resources.quote import Quote, QuoteList
@@ -14,15 +14,23 @@ from db import db
 from resources.user import User
 
 app = Flask(__name__)
-app.debug = True
+# app.debug = True
 app.config['SECRET_KEY'] = 'secret_key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.sqlite'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['PROPAGATE_EXCEPTIONS'] = True
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
+
+jwt = JWTManager(app)
 api = Api(app)
 
 db.init_app(app)
+
+
+api.add_resource(Quote, '/quote/<string:_id>')
+api.add_resource(QuoteList, '/quotes/<string:filter_text>', '/quotes')
+api.add_resource(Tag, '/tag')
+api.add_resource(User, '/user')
 
 
 # TODO remove on production DB
@@ -33,13 +41,9 @@ def create_tables():
     populate()
 
 
-jwt = JWTManager(app)
-
-api.add_resource(Quote, '/quote/<string:_id>')
-api.add_resource(QuoteList, '/quotes/<string:filter_text>', '/quotes')
-api.add_resource(Tag, '/tag')
-api.add_resource(User, '/user')
-
+# @app.before_request
+# def check_jwt_token():
+#     pass
 
 @jwt.user_identity_loader
 def user_identity_lookup(user: UserModel):
@@ -50,6 +54,11 @@ def user_identity_lookup(user: UserModel):
 def user_lookup_callback(_jwt_header, jwt_data):
     identity = jwt_data["sub"]
     return UserModel.query.filter_by(id=identity).one_or_none()
+
+
+@jwt.expired_token_loader
+def my_expired_token_callback(jwt_header, jwt_payload):
+    return jsonify(code="token_ex", err=f"token {jwt_header + ' ' + jwt_payload} expired"), 401
 
 
 @app.route('/login', methods=['POST'])
@@ -69,7 +78,7 @@ def login_user():
         return jsonify(
             accessToken=token,
             **user.json()
-        )
+        ), 201
 
     return make_response('could not verify', 401, {'WWW.Authentication': 'Basic realm: "login required"'})
 
@@ -85,11 +94,16 @@ def register_user():
             public_id=str(uuid.uuid4()),
             email=data.get('email'),
             username=data.get('username'),
-            password=hashed_password
+            password=hashed_password,
+            is_admin=False
         )
         db.session.add(new_user)
         db.session.commit()
-        return jsonify({'message': 'registered successfully'}), 201
+        token = create_access_token(identity=new_user).decode("utf-8")
+        return jsonify(
+            accessToken=token,
+            **new_user.json()
+        ), 201
 
 
 if __name__ == '__main__':

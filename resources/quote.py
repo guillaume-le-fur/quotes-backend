@@ -1,9 +1,19 @@
+import datetime
+import time
+
 import sqlalchemy.exc
 from flask_jwt_extended import jwt_required
 from flask_restful import Resource, reqparse
 from models.quote import QuoteModel
 from models.tag import TagModel
-from flask_restful import request
+
+from models.user import UserModel
+
+
+def extended_quote_json(quote: QuoteModel):
+    q = quote.json()
+    q['creatorUsername'] = UserModel.find_by_id(quote.creator_id).username
+    return q
 
 
 class Quote(Resource):
@@ -38,13 +48,14 @@ class Quote(Resource):
         required=False
     )
 
-    # @jwt_required()
+    @jwt_required()
     def get(self, _id):
         quote = QuoteModel.find_by_id(_id)
         if quote:
-            return quote.json()
+            return extended_quote_json(quote=quote)
         return {'message': 'quote not found'}, 404
 
+    @jwt_required()
     def delete(self, _id):
         quote = QuoteModel.find_by_id(_id)
         if quote:
@@ -52,6 +63,7 @@ class Quote(Resource):
             return {'message': 'quote deleted.'}, 200
         return {'message': 'quote not found.'}, 404
 
+    @jwt_required()
     def put(self, _id: str = None):
         _id = int(_id)
         data = Quote.parser.parse_args()
@@ -63,8 +75,9 @@ class Quote(Resource):
                 quote.book = data["book"]
                 quote.tags = [TagModel(tag) for tag in (data.get("tags", []))]
             else:
-                quote = QuoteModel(**data)
+                return {'message': 'quote not found, provide ID 0 to create quote'}, 404
         else:
+            data['creation_date'] = datetime.datetime.now()
             quote = QuoteModel(**data)
         quote.save_to_db()
         return quote.json(), 200
@@ -110,7 +123,7 @@ class QuoteList(Resource):
             result = QuoteModel.query.all()
         return {
             'quotes': list(map(
-                lambda x: x.json(),
+                extended_quote_json,
                 result
             ))
         }

@@ -1,3 +1,4 @@
+from flask_jwt_extended import jwt_required
 from flask_restful import Resource, reqparse
 
 from models.user import UserModel
@@ -25,6 +26,7 @@ class User(Resource):
         help="This field cannot be left blank!"
     )
 
+    @jwt_required()
     def get(self, _id):
         user = UserModel.find_by_id(_id)
         if user:
